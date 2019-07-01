@@ -1,6 +1,6 @@
-(** * Examples  *)
+(** * Contract examples  *)
 
-(** We develop some blockchain infrastructure relevant for the contract execution (a fragment of the standard library and an execution context). With that we develop a deep embedding of a crowdfunding contract and prove some if its properties using the corresponding shallow embedding  *)
+(** We develop some blockchain infrastructure relevant for the contract execution (a fragment of the standard library and an execution context). With that, we develop a deep embedding of a crowdfunding contract and prove some of its properties using the corresponding shallow embedding *)
 Require Import String.
 Require Import Polymorphic.Ast Lib.CustomTactics.
 Require Import List.
@@ -358,8 +358,6 @@ reached within a deadline *)
     simpl.
     intros Hsender Hmsg Hfunded Hlook Hcall.
     subst;simpl in *.  inv_andb Hfunded.
-    (* direct rewriting with [Hlook] or [Hgoal] cannot unify terms
-       in Hcall for some reason, but destruct with underscores works *)
     destruct (_ && _)%bool;tryfalse.
     destruct (lookup_map _ _);tryfalse; inversion Hlook;subst;clear Hlook.
     split.

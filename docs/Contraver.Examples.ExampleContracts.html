@@ -29,11 +29,11 @@
 </div>
 
 <div class="doc">
-<a name="lab24"></a><h1 class="section">Examples</h1>
+<a name="lab24"></a><h1 class="section">Contract examples</h1>
 
 <div class="paragraph"> </div>
 
- We develop some blockchain infrastructure relevant for the contract execution (a fragment of the standard library and an execution context). With that we develop a deep embedding of a crowdfunding contract and prove some if its properties using the corresponding shallow embedding  
+ We develop some blockchain infrastructure relevant for the contract execution (a fragment of the standard library and an execution context). With that, we develop a deep embedding of a crowdfunding contract and prove some of its properties using the corresponding shallow embedding 
 </div>
 <div class="code">
 <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.10+alpha/stdlib//Coq.Strings.String.html#"><span class="id" title="library">String</span></a>.<br/>
@@ -571,8 +571,6 @@ reached within a deadline
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">Hsender</span> <span class="id" title="var">Hmsg</span> <span class="id" title="var">Hfunded</span> <span class="id" title="var">Hlook</span> <span class="id" title="var">Hcall</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">subst</span>;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> *. <span class="id" title="var">inv_andb</span> <span class="id" title="var">Hfunded</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;direct&nbsp;rewriting&nbsp;with&nbsp;<span class="inlinecode"><span class="id" title="var">Hlook</span></span>&nbsp;or&nbsp;<span class="inlinecode"><span class="id" title="var">Hgoal</span></span>&nbsp;cannot&nbsp;unify&nbsp;terms<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in&nbsp;Hcall&nbsp;for&nbsp;some&nbsp;reason,&nbsp;but&nbsp;destruct&nbsp;with&nbsp;underscores&nbsp;works&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<span class="id" title="var">_</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.10+alpha/stdlib//Coq.Init.Datatypes.html#9ddeac0ab66152bd1d64bedb507a795e"><span class="id" title="notation">&amp;&amp;</span></a> <span class="id" title="var">_</span>)%<span class="id" title="var">bool</span>;<span class="id" title="var">tryfalse</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="Contraver.Examples.ExampleContracts.html#lookup_map"><span class="id" title="definition">lookup_map</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span>);<span class="id" title="var">tryfalse</span>; <span class="id" title="tactic">inversion</span> <span class="id" title="var">Hlook</span>;<span class="id" title="tactic">subst</span>;<span class="id" title="tactic">clear</span> <span class="id" title="var">Hlook</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">split</span>.<br/>
