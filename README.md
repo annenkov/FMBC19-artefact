@@ -15,4 +15,4 @@ To show how to use the framework, we develop the following examples:
 
 ## Documentation
 
-The documentation generated using Coqdoc and [coqdocjs](https://github.com/tebbi/coqdocjs) is located [here](https://annenkov.github.io/docs/toc.html).
+The documentation generated using Coqdoc and [coqdocjs](https://github.com/tebbi/coqdocjs) is located [here](https://annenkov.github.io/FMBC19-artifact/toc.html).
