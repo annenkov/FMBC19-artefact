@@ -116,7 +116,7 @@ Module CrowdfundingContract.
 
   (** Note that we define the deep embedding (abstract syntax trees) of the data structures and programs using notations. These notations are defined in  [Ast.v] and make use of the "custom entries" feature. The idea is that the corresponding ASTs will be produced from the real Oak programs by means of printing the fully annotated abstract syntax trees build from constructors of the inductive type [Ast.expr] *)
 
-  (** Brackets like [\ \] delimit the scope of global definitions and like [| |] the scope of programs *)
+  (** Brackets like [[\ \]] delimit the scope of global definitions and like [[| |]] the scope of programs *)
 
   (** We model types of addresses and currency by [nat] type of Coq *)
   Notation Address := Nat.
