@@ -1,4 +1,6 @@
 (** * Examples  *)
+
+(** We develop some blockchain infrastructure relevant for the contract execution (a fragment of the standard library and an execution context). With that we develop a deep embedding of a crowdfunding contract and prove some if its properties using the corresponding shallow embedding  *)
 Require Import String.
 Require Import Polymorphic.Ast Lib.CustomTactics.
 Require Import List.
