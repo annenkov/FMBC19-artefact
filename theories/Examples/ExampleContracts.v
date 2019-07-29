@@ -1,6 +1,7 @@
 (** * Contract examples  *)
 
 (** We develop some blockchain infrastructure relevant for the contract execution (a fragment of the standard library and an execution context). With that, we develop a deep embedding of a crowdfunding contract and prove some of its properties using the corresponding shallow embedding *)
+
 Require Import String.
 Require Import Polymorphic.Ast Lib.CustomTactics.
 Require Import List.
@@ -116,7 +117,7 @@ Module CrowdfundingContract.
 
   (** Note that we define the deep embedding (abstract syntax trees) of the data structures and programs using notations. These notations are defined in  [Ast.v] and make use of the "custom entries" feature. The idea is that the corresponding ASTs will be produced from the real Oak programs by means of printing the fully annotated abstract syntax trees build from constructors of the inductive type [Ast.expr] *)
 
-  (** Brackets like [[\ \]] delimit the scope of global definitions and like [[| |]] the scope of programs *)
+   (** Brackets like [[\ \]] delimit the scope of global definitions and like [[| |]] the scope of programs *)
 
   (** We model types of addresses and currency by [nat] type of Coq *)
   Notation Address := Nat.
@@ -124,7 +125,7 @@ Module CrowdfundingContract.
 
   (** Generating names for the data structures  *)
   Run TemplateProgram
-      (mkNames ["State" ; "balance" ; "donations" ; "owner"; "deadline"; "goal";
+      (mkNames ["State" ; "balance" ; "donations" ; "owner"; "deadline"; "goal"; "done";
                 "Result" ; "Res" ; "Error";
                 "Msg"; "Donate"; "GetFunds"; "Claim";
                 "Action"; "Transfer"; "Empty" ] "_coq").
@@ -140,6 +141,7 @@ Module CrowdfundingContract.
          donations : Map;
          owner : Money;
          deadline : Nat;
+         done : Bool;
          goal : Money } \].
 
   (** We can print actual AST by switching off the notations *)
@@ -224,6 +226,9 @@ Module CrowdfundingContract.
     Notation "'goal' a" :=
       [| {eConst goal} {a} |]
         (in custom expr at level 0).
+    Notation "'done' a" :=
+      [| {eConst done} {a} |]
+        (in custom expr at level 0).
 
 
     (** Constructors *)
@@ -270,12 +275,12 @@ Module CrowdfundingContract.
   Import Notations.
 
 
-  (** Generating string constants for varable names *)
+  (** Generating string constants for variable names *)
 
   Run TemplateProgram (mkNames ["c";"s";"e";"m";"v";
-                                "tx_amount"; "bal"; "sender"; "own";
+                                "tx_amount"; "bal"; "sender"; "own"; "isdone" ;
                                 "accs"; "now";
-                                  "newstate"; "newmap"; "cond"] "").
+                                 "newstate"; "newmap"; "cond"] "").
   (** A shortcut for [if .. then .. else ..]  *)
   Notation "'if' cond 'then' b1 'else' b2 : ty" :=
     (eCase (tyInd Bool,0) (tyInd ty) cond
@@ -298,22 +303,23 @@ Module CrowdfundingContract.
          case m : Msg return Result of
             | GetFunds ->
              if (own == sender) && (deadline s < now) && (goal s <= bal)  then
-               Res (mkState 0 accs own (deadline s) (goal s)) (Transfer bal sender)
+               Res (mkState 0 accs own (deadline s) True (goal s))
+                   (Transfer bal sender)
              else Error : Result
            | Donate -> if now <= deadline s then
              (case (mfind accs sender) : Maybe return Result of
                | Just v ->
                  let newmap : Map := madd sender (v + tx_amount) accs in
-                 Res (mkState (tx_amount + bal) newmap own (deadline s) (goal s)) Empty
+                 Res (mkState (tx_amount + bal) newmap own (deadline s) (done s) (goal s)) Empty
                | Nothing ->
                  let newmap : Map := madd sender tx_amount accs in
-                 Res (mkState (tx_amount + bal) newmap own (deadline s) (goal s)) Empty)
+                 Res (mkState (tx_amount + bal) newmap own (deadline s) (done s) (goal s)) Empty)
                else Error : Result
            | Claim ->
-             if (deadline s < now) && (bal < goal s) then
+             if (deadline s < now) && (bal < goal s) && (~ done s) then
              (case (mfind accs sender) : Maybe return Result of
               | Just v -> let newmap : Map := madd sender 0 accs in
-                  Res (mkState (bal-v) newmap own (deadline s) (goal s))
+                  Res (mkState (bal-v) newmap own (deadline s) (done s) (goal s))
                       (Transfer v sender)
                | Nothing -> Error)
               else Error : Result
@@ -451,9 +457,9 @@ reached within a deadline *)
       * simpl in *. rewrite IHm;auto. lia.
   Qed.
 
-  (** The contract does no leak funds: the oveall balance before the deadline is always equal to the sum of individual donations *)
+  (** The contract does no leak funds: the overall balance before the deadline is always equal to the sum of individual donations *)
 
-  Lemma contract_baked
+  Lemma contract_backed
     (init_state final_state: State_coq)
         CallCtx msg out_tx :
     (* pre-condition *)
@@ -498,7 +504,8 @@ reached within a deadline *)
 
     (* post-condition *)
     out_tx = Transfer_coq init_state.(balance_coq) OwnerAddr (* the money are sent back *) /\
-    final_state.(balance_coq) = 0.
+    final_state.(balance_coq) = 0 /\
+    final_state.(done_coq) = true.
   Proof.
     intros Hown Hfund Hmsg Hcall. unfold funded,deadline_passed in *. subst. simpl in *.
     destruct (_ <? _);tryfalse. destruct ( _ =? _);tryfalse. simpl in *.
@@ -506,4 +513,36 @@ reached within a deadline *)
     inversion Hcall. easy.
   Qed.
 
+    (** Backers cannot claim their money if the campaign have succeed (but owner haven't claimed the money yet) *)
+  Lemma no_claim_if_succeeded (init_state final_state: State_coq) CallCtx
+        msg :
+    (* pre-condition *)
+    funded CallCtx.(_cur_time) init_state = true ->
+    init_state.(done_coq) = false ->
+    msg = Claim_coq ->
+
+    entry CallCtx init_state msg = Error_coq.
+  Proof.
+    intros Hfunded Hdone Hmsg.
+    destruct init_state as [i_balance i_dons i_own i_dl i_done i_goal].
+    destruct CallCtx as [from c_addr am now]. simpl in *.
+    unfold funded,deadline_passed,goal_reached in *. subst. simpl in *.
+    destruct (_ <? _);tryfalse. destruct (_ <=? _) eqn:Hleb;tryfalse.
+    replace (i_balance <? i_goal) with false by
+        (symmetry;rewrite Nat.ltb_ge in *; rewrite Nat.leb_le in *;lia).
+    now simpl.
+  Qed.
+
+  (** Backers cannot claim their money if the contract is marked as "done" *)
+  Lemma no_claim_after_done (init_state final_state: State_coq) CallCtx
+        msg :
+    (* pre-condition *)
+    init_state.(done_coq) = true ->
+    msg = Claim_coq ->
+
+    entry CallCtx init_state msg = Error_coq.
+  Proof.
+    intros Hdone Hmsg. subst. simpl in *. destruct (done_coq _);tryfalse. simpl in *.
+    now rewrite Bool.andb_false_r.
+  Qed.
 End CrowdfundingContract.
