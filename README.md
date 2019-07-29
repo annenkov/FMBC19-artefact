@@ -15,10 +15,10 @@ To show how to use the framework, we develop the following examples:
 
 ## Documentation
 
-The documentation generated using Coqdoc and [coqdocjs](https://github.com/tebbi/coqdocjs) is located [here](https://annenkov.github.io/FMBC19-artifact/toc.html).
+The documentation generated using Coqdoc and [coqdocjs](https://github.com/tebbi/coqdocjs) is located [here](https://annenkov.github.io/FMBC19-artefact/toc.html).
 
 Examples:
 
-* [The crowdfunding contract example](https://annenkov.github.io/FMBC19-artifact/Contraver.Examples.ExampleContracts.html)
+* [The crowdfunding contract example](https://annenkov.github.io/FMBC19-artefact/Contraver.Examples.ExampleContracts.html)
 
-* [OakMap](https://annenkov.github.io/FMBC19-artifact/Contraver.Examples.OakMap.html)
+* [OakMap](https://annenkov.github.io/FMBC19-artefact/Contraver.Examples.OakMap.html)
